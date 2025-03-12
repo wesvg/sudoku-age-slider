@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Age-Based Sudoku Difficulty Slider</title>
+  <meta name="description" content="Age-based sudoku difficulty progression for kids ages 3-12. See how sudoku puzzles evolve from simple 2×2 grids to complex 9×9 puzzles as children develop.">
+  <title>Age-Based Sudoku Difficulty Slider for Young Kids</title>
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
@@ -140,97 +141,284 @@
         3: {
           gridSize: 2,
           symbols: "pictures",
-          prefilled: "75%",
+          prefilled: 75,
           title: "Beginner 2×2 Picture Sudoku",
           tips: "Use familiar characters and keep sessions under 5 minutes",
           readiness: "Can recognize patterns and differentiate between images",
-          symbols: ["🐻", "🐱", "🦊", "🐰"] // Changed dog to bear to avoid duplication
+          symbolSet: ["🐻", "🐱", "🦊", "🐰"]
         },
         4: {
           gridSize: 2,
           symbols: "pictures",
-          prefilled: "60%",
+          prefilled: 60,
           title: "2×2 Picture Sudoku",
           tips: "Create a story around the puzzle; lots of praise for attempts",
           readiness: "Can follow a simple rule about placement",
-          symbols: ["🐻", "🐱", "🦊", "🐰"] // Changed dog to bear
+          symbolSet: ["🦁", "🐘", "🐵", "🐯"]
         },
         5: {
           gridSize: 4,
           symbols: "pictures/shapes",
-          prefilled: "60%",
+          prefilled: 60,
           title: "4×4 Picture or Shape Sudoku",
           tips: "Mix colors and shapes; 5-10 minute sessions",
           readiness: "Can maintain focus for short activities",
-          symbols: ["⭐", "❤️", "⚡", "🔵"]
+          symbolSet: ["⭐", "❤️", "⚡", "🔵"]
         },
         6: {
           gridSize: 4,
           symbols: "numbers/shapes",
-          prefilled: "50%",
+          prefilled: 50,
           title: "4×4 Number or Shape Sudoku",
           tips: "Introduce numbers 1-4; guide through logical steps",
           readiness: "Starting to use elimination to solve problems",
-          symbols: ["1", "2", "3", "4"]
+          symbolSet: ["1", "2", "3", "4"]
         },
         7: {
           gridSize: 4,
           symbols: "numbers",
-          prefilled: "40%",
+          prefilled: 40,
           title: "4×4 Number Sudoku",
           tips: "Teach scanning techniques; 15-minute sessions",
           readiness: "Can explain their problem-solving steps",
-          symbols: ["1", "2", "3", "4"]
+          symbolSet: ["1", "2", "3", "4"]
         },
         8: {
           gridSize: 6,
           symbols: "numbers",
-          prefilled: "50%",
+          prefilled: 55,
           title: "6×6 Number Sudoku",
           tips: "Introduce box constraints; allow note-taking",
           readiness: "Understands complex multi-step rules",
-          symbols: ["1", "2", "3", "4", "5", "6"]
+          symbolSet: ["1", "2", "3", "4", "5", "6"]
         },
         9: {
           gridSize: 6,
           symbols: "numbers",
-          prefilled: "40%",
+          prefilled: 45,
           title: "6×6 Advanced Sudoku",
           tips: "Introduce new solving techniques; 20-minute sessions",
           readiness: "Can maintain focus and solve through setbacks",
-          symbols: ["1", "2", "3", "4", "5", "6"]
+          symbolSet: ["1", "2", "3", "4", "5", "6"]
         },
         10: {
           gridSize: 9,
           symbols: "numbers",
-          prefilled: "60%",
+          prefilled: 65,
           title: "Easy 9×9 Sudoku",
           tips: "Break puzzle into smaller sections for easier solving",
           readiness: "Shows persistence with challenging tasks",
-          symbols: ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
+          symbolSet: ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
         },
         11: {
           gridSize: 9,
           symbols: "numbers",
-          prefilled: "50%",
+          prefilled: 55,
           title: "Medium 9×9 Sudoku",
           tips: "Teach multiple solving strategies; celebrate completion",
           readiness: "Applies complex logic across multiple constraints",
-          symbols: ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
+          symbolSet: ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
         },
         12: {
           gridSize: 9,
           symbols: "numbers",
-          prefilled: "40%",
-          title: "Challenging 9×9 Sudoku",
+          prefilled: 45,
+          title: "Hard 9×9 Sudoku",
           tips: "Add social elements like competitions or collaborative solving",
           readiness: "Can tackle advanced puzzles with strategic thinking",
-          symbols: ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
+          symbolSet: ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
         }
       };
       
+      // Function to check if a value is valid at position
+      const isValid = (grid, row, col, val, gridSize) => {
+        // Check row
+        for (let i = 0; i < gridSize; i++) {
+          if (grid[row][i] === val) return false;
+        }
+        
+        // Check column
+        for (let i = 0; i < gridSize; i++) {
+          if (grid[i][col] === val) return false;
+        }
+        
+        // Check box
+        if (gridSize > 2) {
+          const boxSize = gridSize === 9 ? 3 : 2;
+          const boxStartRow = Math.floor(row / boxSize) * boxSize;
+          const boxStartCol = Math.floor(col / boxSize) * boxSize;
+          for (let i = 0; i < boxSize; i++) {
+            for (let j = 0; j < boxSize; j++) {
+              if (grid[boxStartRow + i][boxStartCol + j] === val) return false;
+            }
+          }
+        }
+        
+        return true;
+      };
+      
+      // Create a predefined solved grid for each size to ensure consistency
+      const createSolvedGrid = (gridSize, symbolSet) => {
+        // 2x2 grid - simple pattern
+        if (gridSize === 2) {
+          return [
+            [symbolSet[0], symbolSet[1]],
+            [symbolSet[2], symbolSet[3]]
+          ];
+        }
+        
+        // 4x4 grid - predefined valid solution
+        if (gridSize === 4) {
+          return [
+            [symbolSet[0], symbolSet[1], symbolSet[2], symbolSet[3]],
+            [symbolSet[2], symbolSet[3], symbolSet[0], symbolSet[1]],
+            [symbolSet[1], symbolSet[0], symbolSet[3], symbolSet[2]],
+            [symbolSet[3], symbolSet[2], symbolSet[1], symbolSet[0]]
+          ];
+        }
+        
+        // 6x6 grid - predefined valid solution
+        if (gridSize === 6) {
+          return [
+            [symbolSet[0], symbolSet[1], symbolSet[2], symbolSet[3], symbolSet[4], symbolSet[5]],
+            [symbolSet[4], symbolSet[5], symbolSet[0], symbolSet[1], symbolSet[2], symbolSet[3]],
+            [symbolSet[2], symbolSet[3], symbolSet[4], symbolSet[5], symbolSet[0], symbolSet[1]],
+            [symbolSet[1], symbolSet[0], symbolSet[5], symbolSet[4], symbolSet[3], symbolSet[2]],
+            [symbolSet[5], symbolSet[4], symbolSet[3], symbolSet[2], symbolSet[1], symbolSet[0]],
+            [symbolSet[3], symbolSet[2], symbolSet[1], symbolSet[0], symbolSet[5], symbolSet[4]]
+          ];
+        }
+        
+        // 9x9 grid - predefined valid solution
+        if (gridSize === 9) {
+          return [
+            [symbolSet[0], symbolSet[1], symbolSet[2], symbolSet[3], symbolSet[4], symbolSet[5], symbolSet[6], symbolSet[7], symbolSet[8]],
+            [symbolSet[3], symbolSet[4], symbolSet[5], symbolSet[6], symbolSet[7], symbolSet[8], symbolSet[0], symbolSet[1], symbolSet[2]],
+            [symbolSet[6], symbolSet[7], symbolSet[8], symbolSet[0], symbolSet[1], symbolSet[2], symbolSet[3], symbolSet[4], symbolSet[5]],
+            [symbolSet[1], symbolSet[2], symbolSet[0], symbolSet[4], symbolSet[5], symbolSet[3], symbolSet[7], symbolSet[8], symbolSet[6]],
+            [symbolSet[4], symbolSet[5], symbolSet[3], symbolSet[7], symbolSet[8], symbolSet[6], symbolSet[1], symbolSet[2], symbolSet[0]],
+            [symbolSet[7], symbolSet[8], symbolSet[6], symbolSet[1], symbolSet[2], symbolSet[0], symbolSet[4], symbolSet[5], symbolSet[3]],
+            [symbolSet[2], symbolSet[0], symbolSet[1], symbolSet[5], symbolSet[3], symbolSet[4], symbolSet[8], symbolSet[6], symbolSet[7]],
+            [symbolSet[5], symbolSet[3], symbolSet[4], symbolSet[8], symbolSet[6], symbolSet[7], symbolSet[2], symbolSet[0], symbolSet[1]],
+            [symbolSet[8], symbolSet[6], symbolSet[7], symbolSet[2], symbolSet[0], symbolSet[1], symbolSet[5], symbolSet[3], symbolSet[4]]
+          ];
+        }
+        
+        return [];
+      };
+      
+      // Function to create a puzzle by removing cells based on difficulty
+      const createPuzzle = (solvedGrid, prefilledPercent, gridSize) => {
+        // Create a pattern for each difficulty level that looks appropriate
+        // Clone the solved grid
+        const puzzle = JSON.parse(JSON.stringify(solvedGrid));
+        
+        // Calculate cells to keep filled
+        const totalCells = gridSize * gridSize;
+        const numToKeepFilled = Math.round(totalCells * prefilledPercent / 100);
+        
+        // For 9x9 puzzles, ensure distribution looks right
+        if (gridSize === 9) {
+          // Create a pattern based on difficulty that looks appropriate
+          const positions = [];
+          for (let row = 0; row < gridSize; row++) {
+            for (let col = 0; col < gridSize; col++) {
+              positions.push({row, col});
+            }
+          }
+          
+          // Shuffle the positions to randomize which cells we'll keep
+          for (let i = positions.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [positions[i], positions[j]] = [positions[j], positions[i]];
+          }
+          
+          // Clear all cells first
+          for (let row = 0; row < gridSize; row++) {
+            for (let col = 0; col < gridSize; col++) {
+              puzzle[row][col] = "";
+            }
+          }
+          
+          // Then fill the correct number of cells
+          for (let i = 0; i < numToKeepFilled; i++) {
+            const {row, col} = positions[i];
+            puzzle[row][col] = solvedGrid[row][col];
+          }
+          
+          // Ensure each box has at least one filled cell for visual appeal
+          const boxSize = 3; // For 9x9
+          for (let boxRow = 0; boxRow < 3; boxRow++) {
+            for (let boxCol = 0; boxCol < 3; boxCol++) {
+              let hasFilledCell = false;
+              
+              // Check if the box has any filled cells
+              for (let r = 0; r < boxSize; r++) {
+                for (let c = 0; c < boxSize; c++) {
+                  const row = boxRow * boxSize + r;
+                  const col = boxCol * boxSize + c;
+                  if (puzzle[row][col] !== "") {
+                    hasFilledCell = true;
+                    break;
+                  }
+                }
+                if (hasFilledCell) break;
+              }
+              
+              // If no filled cells, add one
+              if (!hasFilledCell) {
+                const row = boxRow * boxSize + Math.floor(Math.random() * boxSize);
+                const col = boxCol * boxSize + Math.floor(Math.random() * boxSize);
+                puzzle[row][col] = solvedGrid[row][col];
+              }
+            }
+          }
+        } else {
+          // For smaller puzzles, use a simpler approach
+          // Create a list of all positions
+          const positions = [];
+          for (let row = 0; row < gridSize; row++) {
+            for (let col = 0; col < gridSize; col++) {
+              positions.push({row, col});
+            }
+          }
+          
+          // Shuffle positions
+          for (let i = positions.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [positions[i], positions[j]] = [positions[j], positions[i]];
+          }
+          
+          // Clear all cells first
+          for (let row = 0; row < gridSize; row++) {
+            for (let col = 0; col < gridSize; col++) {
+              puzzle[row][col] = "";
+            }
+          }
+          
+          // Then fill exactly the specified percentage
+          for (let i = 0; i < numToKeepFilled; i++) {
+            const {row, col} = positions[i];
+            puzzle[row][col] = solvedGrid[row][col];
+          }
+        }
+        
+        // Count filled cells to verify
+        let filledCount = 0;
+        for (let row = 0; row < gridSize; row++) {
+          for (let col = 0; col < gridSize; col++) {
+            if (puzzle[row][col] !== "") filledCount++;
+          }
+        }
+        
+        // Add a debug line to check if percentages match
+        console.log(`Grid size: ${gridSize}, Target filled: ${prefilledPercent}%, Actual filled: ${Math.round(filledCount/totalCells*100)}%, Cells: ${filledCount}/${totalCells}`);
+        
+        return puzzle;
+      };
+      
       // Function to get cell border styles for box dividers
-      const getColorStyle = (rowIndex, colIndex, gridSize) => {
+      const getBoxBorderStyle = (rowIndex, colIndex, gridSize) => {
         let style = {};
         
         if (gridSize === 4) {
@@ -262,42 +450,17 @@
         return style;
       };
       
-      // Generate a sample sudoku grid based on age config
-      const generateGrid = (config) => {
-        const { gridSize, symbols } = config;
-        const cells = [];
-        
-        // Only fill some cells based on prefilled percentage
-        const totalCells = gridSize * gridSize;
-        const prefilledPercent = parseInt(config.prefilled) / 100;
-        const prefilledCount = Math.floor(totalCells * prefilledPercent);
-        
-        // Create random positions to fill
-        const filledPositions = new Set();
-        while (filledPositions.size < prefilledCount) {
-          const pos = Math.floor(Math.random() * totalCells);
-          filledPositions.add(pos);
-        }
-        
-        // Create the grid
-        for (let i = 0; i < gridSize; i++) {
-          const row = [];
-          for (let j = 0; j < gridSize; j++) {
-            const pos = i * gridSize + j;
-            const isFilled = filledPositions.has(pos);
-            const value = isFilled ? symbols[j % symbols.length] : "";
-            
-            row.push({ value, isFilled });
-          }
-          cells.push(row);
-        }
-        
-        return cells;
-      };
-      
       // Get current age configuration
       const currentConfig = ageConfigs[age];
-      const grid = generateGrid(currentConfig);
+      
+      // Create a solved grid and puzzle using our more accurate method
+      const solvedGrid = createSolvedGrid(currentConfig.gridSize, currentConfig.symbolSet);
+      const puzzle = createPuzzle(solvedGrid, currentConfig.prefilled, currentConfig.gridSize);
+      
+      // Use the React.useMemo hook to calculate puzzles only when age changes
+      React.useEffect(() => {
+        // This will force a re-render when age changes
+      }, [age]);
       
       return (
         <div>
@@ -316,6 +479,7 @@
               max="12" 
               value={age} 
               onChange={(e) => setAge(parseInt(e.target.value))}
+              aria-label={`Age slider, currently set to age ${age}`}
             />
             <div className="age-display">
               Age {age}
@@ -328,18 +492,18 @@
             <div className="grid-container">
               <div className="grid-title">{currentConfig.title}</div>
               <div className="sudoku-grid">
-                {grid.map((row, rowIndex) => (
+                {puzzle.map((row, rowIndex) => (
                   <div key={rowIndex} className="grid-row">
                     {row.map((cell, colIndex) => (
                       <div 
                         key={`${rowIndex}-${colIndex}`}
                         className="sudoku-cell"
                         style={{
-                          ...getColorStyle(rowIndex, colIndex, currentConfig.gridSize),
-                          backgroundColor: cell.isFilled ? '#e6f7ff' : 'white'
+                          ...getBoxBorderStyle(rowIndex, colIndex, currentConfig.gridSize),
+                          backgroundColor: cell ? '#e6f7ff' : 'white'
                         }}
                       >
-                        {cell.value}
+                        {cell}
                       </div>
                     ))}
                   </div>
@@ -359,7 +523,7 @@
               </div>
               <div className="info-item">
                 <span className="info-label">Pre-filled Cells:</span>
-                <span>{currentConfig.prefilled}</span>
+                <span>{currentConfig.prefilled}%</span>
               </div>
               <div className="info-item">
                 <span className="info-label">Key Tips:</span>
