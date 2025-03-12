@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Age-Based Sudoku Difficulty Slider</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f8f9fa;
+      color: #333;
+    }
+    
+    #sudoku-slider-app {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .slider-container {
+      margin-bottom: 30px;
+    }
+    
+    .slider-labels {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-size: 14px;
+      color: #666;
+    }
+    
+    .slider-input {
+      width: 100%;
+      height: 8px;
+      background: #e0e0e0;
+      outline: none;
+      border-radius: 4px;
+    }
+    
+    .age-display {
+      text-align: center;
+      margin-top: 10px;
+      font-weight: bold;
+      font-size: 16px;
+    }
+    
+    .grid-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    
+    .grid-title {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 15px;
+      color: #2c3e50;
+    }
+    
+    .sudoku-grid {
+      border: 2px solid #333;
+      display: inline-block;
+    }
+    
+    .grid-row {
+      display: flex;
+    }
+    
+    .sudoku-cell {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border: 1px solid #ddd;
+      font-size: 18px;
+      font-weight: bold;
+      box-sizing: border-box;
+    }
+    
+    .info-panel {
+      background-color: #f5f7fa;
+      border-radius: 8px;
+      padding: 15px;
+      margin-top: 20px;
+    }
+    
+    .info-item {
+      margin-bottom: 10px;
+    }
+    
+    .info-label {
+      font-weight: bold;
+      margin-right: 5px;
+    }
+    
+    .footer-note {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 14px;
+      color: #666;
+    }
+    
+    @media (max-width: 600px) {
+      .sudoku-cell {
+        width: 30px;
+        height: 30px;
+        font-size: 16px;
+      }
+      
+      #sudoku-slider-app {
+        padding: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="sudoku-slider-app"></div>
+  
+  <!-- React and ReactDOM -->
+  <script crossorigin src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
+  
+  <!-- Babel for JSX -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  
+  <script type="text/babel">
+    // Age-Based Sudoku Difficulty Slider Component
+    const SudokuSlider = () => {
+      const [age, setAge] = React.useState(5);
+      
+      // Configuration for different ages
+      const ageConfigs = {
+        3: {
+          gridSize: 2,
+          symbols: "pictures",
+          prefilled: "75%",
+          title: "Beginner 2×2 Picture Sudoku",
+          tips: "Use familiar characters and keep sessions under 5 minutes",
+          readiness: "Can recognize patterns and differentiate between images",
+          symbols: ["🐻", "🐱", "🦊", "🐰"] // Changed dog to bear to avoid duplication
+        },
+        4: {
+          gridSize: 2,
+          symbols: "pictures",
+          prefilled: "60%",
+          title: "2×2 Picture Sudoku",
+          tips: "Create a story around the puzzle; lots of praise for attempts",
+          readiness: "Can follow a simple rule about placement",
+          symbols: ["🐻", "🐱", "🦊", "🐰"] // Changed dog to bear
+        },
+        5: {
+          gridSize: 4,
+          symbols: "pictures/shapes",
+          prefilled: "60%",
+          title: "4×4 Picture or Shape Sudoku",
+          tips: "Mix colors and shapes; 5-10 minute sessions",
+          readiness: "Can maintain focus for short activities",
+          symbols: ["⭐", "❤️", "⚡", "🔵"]
+        },
+        6: {
+          gridSize: 4,
+          symbols: "numbers/shapes",
+          prefilled: "50%",
+          title: "4×4 Number or Shape Sudoku",
+          tips: "Introduce numbers 1-4; guide through logical steps",
+          readiness: "Starting to use elimination to solve problems",
+          symbols: ["1", "2", "3", "4"]
+        },
+        7: {
+          gridSize: 4,
+          symbols: "numbers",
+          prefilled: "40%",
+          title: "4×4 Number Sudoku",
+          tips: "Teach scanning techniques; 15-minute sessions",
+          readiness: "Can explain their problem-solving steps",
+          symbols: ["1", "2", "3", "4"]
+        },
+        8: {
+          gridSize: 6,
+          symbols: "numbers",
+          prefilled: "50%",
+          title: "6×6 Number Sudoku",
+          tips: "Introduce box constraints; allow note-taking",
+          readiness: "Understands complex multi-step rules",
+          symbols: ["1", "2", "3", "4", "5", "6"]
+        },
+        9: {
+          gridSize: 6,
+          symbols: "numbers",
+          prefilled: "40%",
+          title: "6×6 Advanced Sudoku",
+          tips: "Introduce new solving techniques; 20-minute sessions",
+          readiness: "Can maintain focus and solve through setbacks",
+          symbols: ["1", "2", "3", "4", "5", "6"]
+        },
+        10: {
+          gridSize: 9,
+          symbols: "numbers",
+          prefilled: "60%",
+          title: "Easy 9×9 Sudoku",
+          tips: "Break puzzle into smaller sections for easier solving",
+          readiness: "Shows persistence with challenging tasks",
+          symbols: ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
+        },
+        11: {
+          gridSize: 9,
+          symbols: "numbers",
+          prefilled: "50%",
+          title: "Medium 9×9 Sudoku",
+          tips: "Teach multiple solving strategies; celebrate completion",
+          readiness: "Applies complex logic across multiple constraints",
+          symbols: ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
+        },
+        12: {
+          gridSize: 9,
+          symbols: "numbers",
+          prefilled: "40%",
+          title: "Challenging 9×9 Sudoku",
+          tips: "Add social elements like competitions or collaborative solving",
+          readiness: "Can tackle advanced puzzles with strategic thinking",
+          symbols: ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
+        }
+      };
+      
+      // Function to get cell border styles for box dividers
+      const getColorStyle = (rowIndex, colIndex, gridSize) => {
+        let style = {};
+        
+        if (gridSize === 4) {
+          // For 4x4 grid - 2x2 boxes - divide exactly in the middle
+          const boxBorderBottom = rowIndex === 1 ? "2px solid #333" : "";
+          const boxBorderRight = colIndex === 1 ? "2px solid #333" : "";
+          style = { 
+            borderBottom: boxBorderBottom,
+            borderRight: boxBorderRight
+          };
+        } else if (gridSize === 6) {
+          // For 6x6 grid - 2x3 boxes
+          const boxBorderBottom = rowIndex === 1 || rowIndex === 3 ? "2px solid #333" : "";
+          const boxBorderRight = colIndex === 1 || colIndex === 3 ? "2px solid #333" : "";
+          style = { 
+            borderBottom: boxBorderBottom,
+            borderRight: boxBorderRight
+          };
+        } else if (gridSize === 9) {
+          // For 9x9 grid - 3x3 boxes
+          const boxBorderBottom = rowIndex === 2 || rowIndex === 5 ? "2px solid #333" : "";
+          const boxBorderRight = colIndex === 2 || colIndex === 5 ? "2px solid #333" : "";
+          style = { 
+            borderBottom: boxBorderBottom,
+            borderRight: boxBorderRight
+          };
+        }
+        
+        return style;
+      };
+      
+      // Generate a sample sudoku grid based on age config
+      const generateGrid = (config) => {
+        const { gridSize, symbols } = config;
+        const cells = [];
+        
+        // Only fill some cells based on prefilled percentage
+        const totalCells = gridSize * gridSize;
+        const prefilledPercent = parseInt(config.prefilled) / 100;
+        const prefilledCount = Math.floor(totalCells * prefilledPercent);
+        
+        // Create random positions to fill
+        const filledPositions = new Set();
+        while (filledPositions.size < prefilledCount) {
+          const pos = Math.floor(Math.random() * totalCells);
+          filledPositions.add(pos);
+        }
+        
+        // Create the grid
+        for (let i = 0; i < gridSize; i++) {
+          const row = [];
+          for (let j = 0; j < gridSize; j++) {
+            const pos = i * gridSize + j;
+            const isFilled = filledPositions.has(pos);
+            const value = isFilled ? symbols[j % symbols.length] : "";
+            
+            row.push({ value, isFilled });
+          }
+          cells.push(row);
+        }
+        
+        return cells;
+      };
+      
+      // Get current age configuration
+      const currentConfig = ageConfigs[age];
+      const grid = generateGrid(currentConfig);
+      
+      return (
+        <div>
+          <h2 style={{ textAlign: 'center', marginBottom: '20px' }}>Age-Based Sudoku Difficulty Slider</h2>
+          
+          {/* Age slider */}
+          <div className="slider-container">
+            <div className="slider-labels">
+              <span>Age 3</span>
+              <span>Age 12</span>
+            </div>
+            <input 
+              type="range" 
+              className="slider-input"
+              min="3" 
+              max="12" 
+              value={age} 
+              onChange={(e) => setAge(parseInt(e.target.value))}
+            />
+            <div className="age-display">
+              Age {age}
+            </div>
+          </div>
+          
+          {/* Grid visualization and info display */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            {/* Sudoku grid */}
+            <div className="grid-container">
+              <div className="grid-title">{currentConfig.title}</div>
+              <div className="sudoku-grid">
+                {grid.map((row, rowIndex) => (
+                  <div key={rowIndex} className="grid-row">
+                    {row.map((cell, colIndex) => (
+                      <div 
+                        key={`${rowIndex}-${colIndex}`}
+                        className="sudoku-cell"
+                        style={{
+                          ...getColorStyle(rowIndex, colIndex, currentConfig.gridSize),
+                          backgroundColor: cell.isFilled ? '#e6f7ff' : 'white'
+                        }}
+                      >
+                        {cell.value}
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            {/* Information panel */}
+            <div className="info-panel">
+              <div className="info-item">
+                <span className="info-label">Grid Size:</span>
+                <span>{currentConfig.gridSize}×{currentConfig.gridSize}</span>
+              </div>
+              <div className="info-item">
+                <span className="info-label">Symbols Used:</span>
+                <span className="capitalize">{currentConfig.symbols}</span>
+              </div>
+              <div className="info-item">
+                <span className="info-label">Pre-filled Cells:</span>
+                <span>{currentConfig.prefilled}</span>
+              </div>
+              <div className="info-item">
+                <span className="info-label">Key Tips:</span>
+                <span>{currentConfig.tips}</span>
+              </div>
+              <div className="info-item">
+                <span className="info-label">Readiness Indicators:</span>
+                <span>{currentConfig.readiness}</span>
+              </div>
+            </div>
+          </div>
+          
+          <div className="footer-note">
+            <p>Adjust the slider to see how sudoku puzzles evolve as kids develop. The puzzle complexity increases gradually, with changes in grid size, symbols used, and the amount of assistance needed.</p>
+          </div>
+        </div>
+      );
+    };
+
+    // Render the component
+    ReactDOM.render(<SudokuSlider />, document.getElementById('sudoku-slider-app'));
+  </script>
+</body>
+</html>
